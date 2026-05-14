@@ -1,5 +1,6 @@
 package com.shooraglobal.agent_database_service.controller;
 
+import com.shooraglobal.agent_database_service.dto.DeviceResponseDto;
 import com.shooraglobal.agent_database_service.dto.ScreenLogRequestDto;
 import com.shooraglobal.agent_database_service.dto.ScreenLogResponseDto;
 import com.shooraglobal.agent_database_service.service.ScreenLogService;
@@ -7,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/screenlogs")
@@ -20,33 +23,17 @@ public class ScreenLogController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadScreenLog(
-            @RequestPart("data")
-            ScreenLogRequestDto dto,
+    public ResponseEntity<String> uploadScreenLog(@RequestPart("data") ScreenLogRequestDto dto,
+                                                  @RequestPart("file") MultipartFile file) {
 
-            @RequestPart("file")
-            MultipartFile file
-    ) {
-
-        try {
-
-            screenLogService.saveScreenLog(dto, file);
-
-            return ResponseEntity.ok("Uploaded");
-
-        } catch (Exception e) {
-
-            return ResponseEntity
-                    .internalServerError()
-                    .body(e.getMessage());
-        }
+        return new ResponseEntity<>(screenLogService.saveScreenLog(dto,file),HttpStatus.CREATED);
     }
 
 
-    @GetMapping("/get")
-    public ResponseEntity<ScreenLogResponseDto> getScreenLogs( @RequestParam String username , @RequestParam String date){
+    @GetMapping("/devices")
+    public ResponseEntity<List<DeviceResponseDto>> getAllDevices(){
 
-        return new ResponseEntity<>(screenLogService.getScreenLogs(username,date),HttpStatus.OK);
+        return new ResponseEntity<>(screenLogService.getAllDevices(),HttpStatus.OK);
 
 
 

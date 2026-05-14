@@ -1,57 +1,42 @@
-package com.shooraglobal.agent_database_service.entity;
-
-import jakarta.persistence.*;
+package com.shooraglobal.agent_database_service.dto;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
-@Entity
-@Table(
-        name = "devices",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "macAddress")
-        }
-)
-public class Device {
+public class DeviceResponseDto {
+    private long id;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public long getId() {
+        return id;
+    }
 
-    @Column(length = 100)
+    public void setId(long id) {
+        this.id = id;
+    }
+
     private String username;
 
-    @Column(length = 150)
     private String computerName;
 
-    @Column(length = 50, nullable = false, unique = true)
     private String macAddress;
 
     private LocalDateTime lastScreenShotCaptureAt;
 
-    @OneToMany(
-            mappedBy = "device",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<ScreenLog> screenLogs = new ArrayList<>();
-
-    public Device() {
-    }
-
-    public Device(
-            String username,
-            String computerName,
-            String macAddress
-    ) {
+    public DeviceResponseDto(String username, String computerName, String macAddress, LocalDateTime lastScreenShotCaptureAt) {
         this.username = username;
         this.computerName = computerName;
         this.macAddress = macAddress;
+        this.lastScreenShotCaptureAt = lastScreenShotCaptureAt;
     }
 
-    public Long getId() {
-        return id;
+    public DeviceResponseDto(long id, String username, String computerName, String macAddress, LocalDateTime lastScreenShotCaptureAt) {
+        this.id = id;
+        this.username = username;
+        this.computerName = computerName;
+        this.macAddress = macAddress;
+        this.lastScreenShotCaptureAt = lastScreenShotCaptureAt;
+    }
+
+    public DeviceResponseDto() {
     }
 
     public String getUsername() {
@@ -76,16 +61,6 @@ public class Device {
 
     public void setMacAddress(String macAddress) {
         this.macAddress = macAddress;
-    }
-
-
-
-    public List<ScreenLog> getScreenLogs() {
-        return screenLogs;
-    }
-
-    public void setScreenLogs(List<ScreenLog> screenLogs) {
-        this.screenLogs = screenLogs;
     }
 
     public LocalDateTime getLastScreenShotCaptureAt() {

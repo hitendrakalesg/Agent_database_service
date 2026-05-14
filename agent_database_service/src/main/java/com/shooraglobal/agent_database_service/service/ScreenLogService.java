@@ -1,77 +1,68 @@
 package com.shooraglobal.agent_database_service.service;
 
+import com.shooraglobal.agent_database_service.dto.DeviceResponseDto;
 import com.shooraglobal.agent_database_service.dto.ScreenLogRequestDto;
 import com.shooraglobal.agent_database_service.dto.ScreenLogResponseDto;
 import com.shooraglobal.agent_database_service.entity.Device;
 import com.shooraglobal.agent_database_service.entity.ScreenLog;
+import com.shooraglobal.agent_database_service.exception.AgentDatabaseServiceException;
 import com.shooraglobal.agent_database_service.repo.DeviceRepo;
 import com.shooraglobal.agent_database_service.repo.ScreenLogRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import com.shooraglobal.agent_database_service.util.FileUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import java.util.List;
+
 
 @Service
 public class ScreenLogService {
     private  final DeviceRepo deviceRepo;
     private final ScreenLogRepo screenLogRepo;
-    @Value("${storage.path}")
-    private String BASE_DIR;
+    private final FileUtil fileUtil;
 
-    public ScreenLogService(DeviceRepo deviceRepo, ScreenLogRepo screenLogRepo) {
+
+    public ScreenLogService(DeviceRepo deviceRepo, ScreenLogRepo screenLogRepo, FileUtil fileUtil) {
         this.deviceRepo = deviceRepo;
         this.screenLogRepo = screenLogRepo;
 
+        this.fileUtil = fileUtil;
     }
+    @Transactional
+    public String saveScreenLog(ScreenLogRequestDto dto, MultipartFile file) {
 
-    public void saveScreenLog(ScreenLogRequestDto dto, MultipartFile file) throws IOException {
+        String type = file.getContentType();
+
+        if (type == null || !type.startsWith("image/")) {
+            throw new AgentDatabaseServiceException("Wrong File Type!");
+        }
 
         Device device = deviceRepo
                 .findByMacAddress(dto.getMacAddress())
-                .orElseGet(() -> {
+                .orElseGet(Device::new);
 
-                    Device d = new Device();
+        device.setUsername(dto.getUsername());
 
-                    d.setUsername(dto.getUsername());
-                    d.setComputerName(dto.getComputerName());
-                    d.setMacAddress(dto.getMacAddress());
+        device.setComputerName(dto.getComputerName());
 
-                    return deviceRepo.save(d);
+        device.setMacAddress(dto.getMacAddress());
+
+        device.setLastScreenShotCaptureAt(dto.getCaptureTime());
+
+        device = deviceRepo.save(device);
 
 
-                });
 
-        String folderPath =
-                BASE_DIR + "/" +
-                        sanitize(dto.getComputerName()) + "_" +
-                        sanitize(dto.getUsername()) + "/" +
-                        LocalDate.now();
+//      creating folder to store screenshot
 
-        Files.createDirectories(Paths.get(folderPath));
-
-        // FILE NAME
-
-        String fileName =
-                LocalTime.now()
-                        .format(DateTimeFormatter.ofPattern("HH-mm"))
-                        + ".png";
-
-        Path imagePath = Paths.get(folderPath, fileName);
-
-        // SAVE FILE
-
-        Files.copy(
-                file.getInputStream(),
-                imagePath,
-                StandardCopyOption.REPLACE_EXISTING
-        );
+        Path imagePath= null;
+        try {
+            imagePath = fileUtil.createFile(dto,file);
+        } catch (IOException e) {
+            throw new AgentDatabaseServiceException("Error in Creating File");
+        }
 
         // SAVE DB RECORD
 
@@ -84,35 +75,31 @@ public class ScreenLogService {
         screenLogRepo.save(screenLog);
 
 
+        return "Screen Log Uploaded Successfully.";
+
+
 
 
 
     }
 
-    private String sanitize(String value) {
 
-        if (value == null) {
-            return "unknown";
-        }
+    public List<DeviceResponseDto> getAllDevices() {
 
-        return value.replaceAll("[^a-zA-Z0-9-_]", "_");
-    }
+        List<Device> devices = deviceRepo.findAll();
 
-    public ScreenLogResponseDto getScreenLogs(String username, String date) {
+        return devices.stream()
+                .map(device -> new DeviceResponseDto(
 
 
-        Device device=deviceRepo.findByUsername(username);
+                        device.getId(),
+                        device.getUsername(),
+                        device.getComputerName(),
+                        device.getMacAddress(),
+                        device.getLastScreenShotCaptureAt()
 
-        if(device==null) throw new RuntimeException("User not found");
-
-        return null;
-
-
-
-
-
-
-
+                ))
+                .toList();
 
     }
 }
