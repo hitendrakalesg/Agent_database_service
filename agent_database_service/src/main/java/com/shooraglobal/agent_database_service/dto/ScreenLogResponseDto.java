@@ -1,55 +1,49 @@
 package com.shooraglobal.agent_database_service.dto;
 
-import java.util.Map;
+import java.time.LocalDateTime;
 
 public class ScreenLogResponseDto {
-    private String username;
 
-    private String computerName;
+    private Long id;
 
-    private String macAddress;
+    private String imageUrl;
 
-    private Map<String,byte[]> screenshots;
+    private LocalDateTime captureTime;
 
-
-    public String getUsername() {
-        return username;
+    public ScreenLogResponseDto() {
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public ScreenLogResponseDto(
+            Long id,
+            String imageUrl,
+            LocalDateTime captureTime
+    ) {
+        this.id = id;
+        this.imageUrl = imageUrl;
+        this.captureTime = captureTime;
     }
 
-    public String getComputerName() {
-        return computerName;
+    public Long getId() {
+        return id;
     }
 
-    public void setComputerName(String computerName) {
-        this.computerName = computerName;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public String getMacAddress() {
-        return macAddress;
+    public LocalDateTime getCaptureTime() {
+        return captureTime;
     }
 
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public Map<String, byte[]> getScreenshots() {
-        return screenshots;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
-    public void setScreenshots(Map<String, byte[]> screenshots) {
-        this.screenshots = screenshots;
+    public void setCaptureTime(LocalDateTime captureTime) {
+        this.captureTime = captureTime;
     }
-
-    public ScreenLogResponseDto(String username, String computerName, String macAddress, Map<String, byte[]> screenshots) {
-        this.username = username;
-        this.computerName = computerName;
-        this.macAddress = macAddress;
-        this.screenshots = screenshots;
-    }
-
-    public ScreenLogResponseDto(){}
 }

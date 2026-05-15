@@ -2,6 +2,7 @@ package com.shooraglobal.agent_database_service.service;
 
 import com.shooraglobal.agent_database_service.dto.DeviceResponseDto;
 import com.shooraglobal.agent_database_service.dto.ScreenLogRequestDto;
+
 import com.shooraglobal.agent_database_service.dto.ScreenLogResponseDto;
 import com.shooraglobal.agent_database_service.entity.Device;
 import com.shooraglobal.agent_database_service.entity.ScreenLog;
@@ -14,7 +15,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+
 
 
 @Service
@@ -101,5 +112,64 @@ public class ScreenLogService {
                 ))
                 .toList();
 
+    }
+
+    public List<ScreenLogResponseDto> getScreenLogs( Long deviceId,String date) {
+
+        LocalDate localDate = LocalDate.parse(date);
+
+        LocalDateTime start = localDate.atStartOfDay();
+
+        LocalDateTime end = localDate.plusDays(1).atStartOfDay();
+
+        List<ScreenLog> logs =
+                screenLogRepo.findByDeviceIdAndCaptureTimeBetween(
+                        deviceId,
+                        start,
+                        end
+                );
+
+        return logs.stream()
+                .map(log -> new ScreenLogResponseDto(
+
+                        log.getId(),
+
+                        "/api/screenlogs/image/" + log.getId(),
+
+                        log.getCaptureTime()
+
+                ))
+                .toList();
+    }
+
+    public Resource getImage(
+            Long imageId,
+            Long deviceId
+    ) throws IOException {
+
+        ScreenLog screenLog =
+                screenLogRepo
+                        .findByIdAndDeviceId(
+                                imageId,
+                                deviceId
+                        )
+                        .orElseThrow(() ->
+                                new AgentDatabaseServiceException(
+                                        "Image not found"
+                                )
+                        );
+
+        Path path = Paths.get(
+                screenLog.getImagePath()
+        );
+
+        if (!Files.exists(path)) {
+
+            throw new AgentDatabaseServiceException(
+                    "Image file not found"
+            );
+        }
+
+        return new UrlResource(path.toUri());
     }
 }
