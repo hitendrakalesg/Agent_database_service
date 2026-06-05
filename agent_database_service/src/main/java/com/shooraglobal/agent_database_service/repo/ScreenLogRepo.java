@@ -11,14 +11,16 @@ import java.util.Optional;
 public interface ScreenLogRepo
         extends JpaRepository<ScreenLog, Long> {
 
-    List<ScreenLog> findByDeviceIdAndCaptureTimeBetween(
+    List<ScreenLog> findByDevice_IdAndDevice_CompanyNameIgnoreCaseAndCaptureTimeBetween(
             Long deviceId,
+            String companyName,
             LocalDateTime start,
             LocalDateTime end
     );
 
-    Optional<ScreenLog> findByIdAndDeviceId(
+    Optional<ScreenLog> findByIdAndDevice_IdAndDevice_CompanyNameIgnoreCase(
             Long id,
-            Long deviceId
+            Long deviceId,
+            String companyName
     );
 }

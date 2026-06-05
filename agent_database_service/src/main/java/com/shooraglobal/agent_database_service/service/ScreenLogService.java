@@ -12,9 +12,10 @@ import com.shooraglobal.agent_database_service.repo.ScreenLogRepo;
 import com.shooraglobal.agent_database_service.util.FileUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,21 +45,47 @@ public class ScreenLogService {
     @Transactional
     public String saveScreenLog(ScreenLogRequestDto dto, MultipartFile file) {
 
+        if (file.isEmpty()) {
+            throw new AgentDatabaseServiceException("Screenshot file is required");
+        }
+
         String type = file.getContentType();
 
         if (type == null || !type.startsWith("image/")) {
             throw new AgentDatabaseServiceException("Wrong File Type!");
         }
 
+        String companyName = normalizeRequired(dto.getCompanyName(), "companyName");
+        String macAddress = normalizeRequired(dto.getMacAddress(), "macAddress");
+        String employeeName = normalizeRequired(dto.getEmployeeName(), "employeeName");
+
+        dto.setCompanyName(companyName);
+        dto.setMacAddress(macAddress);
+        dto.setEmployeeName(employeeName);
+
         Device device = deviceRepo
-                .findByMacAddress(dto.getMacAddress())
+                .findByCompanyNameIgnoreCaseAndMacAddressIgnoreCase(companyName, macAddress)
                 .orElseGet(Device::new);
 
-        device.setUsername(dto.getUsername());
+        device.setUsername(trimOptional(dto.getUsername()));
 
-        device.setComputerName(dto.getComputerName());
+        device.setComputerName(trimOptional(dto.getComputerName()));
 
-        device.setMacAddress(dto.getMacAddress());
+        device.setMacAddress(macAddress);
+
+        device.setCompanyName(companyName);
+
+        device.setClientName(trimOptional(dto.getClientName()));
+
+        device.setEmployeeName(employeeName);
+
+        device.setRegisteredUserName(trimOptional(dto.getRegisteredUserName()));
+
+        device.setCity(trimOptional(dto.getCity()));
+
+        device.setProductKey(trimOptional(dto.getProductKey()));
+
+        device.setRegisteredUrl(trimOptional(dto.getRegisteredUrl()));
 
         device.setLastScreenShotCaptureAt(dto.getCaptureTime());
 
@@ -95,9 +122,11 @@ public class ScreenLogService {
     }
 
 
-    public List<DeviceResponseDto> getAllDevices() {
+    public List<DeviceResponseDto> getAllDevices(String companyName) {
 
-        List<Device> devices = deviceRepo.findAll();
+        List<Device> devices = deviceRepo.findByCompanyNameIgnoreCaseOrderByEmployeeNameAscComputerNameAsc(
+                normalizeRequired(companyName, "companyName")
+        );
 
         return devices.stream()
                 .map(device -> new DeviceResponseDto(
@@ -107,6 +136,13 @@ public class ScreenLogService {
                         device.getUsername(),
                         device.getComputerName(),
                         device.getMacAddress(),
+                        device.getCompanyName(),
+                        device.getClientName(),
+                        device.getEmployeeName(),
+                        device.getRegisteredUserName(),
+                        device.getCity(),
+                        device.getProductKey(),
+                        device.getRegisteredUrl(),
                         device.getLastScreenShotCaptureAt()
 
                 ))
@@ -114,7 +150,9 @@ public class ScreenLogService {
 
     }
 
-    public List<ScreenLogResponseDto> getScreenLogs( Long deviceId,String date) {
+    public List<ScreenLogResponseDto> getScreenLogs(String companyName, Long deviceId,String date) {
+
+        String normalizedCompanyName = normalizeRequired(companyName, "companyName");
 
         LocalDate localDate = LocalDate.parse(date);
 
@@ -123,18 +161,21 @@ public class ScreenLogService {
         LocalDateTime end = localDate.plusDays(1).atStartOfDay();
 
         List<ScreenLog> logs =
-                screenLogRepo.findByDeviceIdAndCaptureTimeBetween(
+                screenLogRepo.findByDevice_IdAndDevice_CompanyNameIgnoreCaseAndCaptureTimeBetween(
                         deviceId,
+                        normalizedCompanyName,
                         start,
                         end
                 );
+
+        String encodedCompanyName = UriUtils.encodePathSegment(normalizedCompanyName, StandardCharsets.UTF_8);
 
         return logs.stream()
                 .map(log -> new ScreenLogResponseDto(
 
                         log.getId(),
 
-                        "/api/screenlogs/image/" + log.getId(),
+                        "/api/screenlogs/companies/" + encodedCompanyName + "/devices/" + deviceId + "/images/" + log.getId(),
 
                         log.getCaptureTime()
 
@@ -143,15 +184,19 @@ public class ScreenLogService {
     }
 
     public Resource getImage(
+            String companyName,
             Long imageId,
             Long deviceId
     ) throws IOException {
 
+        String normalizedCompanyName = normalizeRequired(companyName, "companyName");
+
         ScreenLog screenLog =
                 screenLogRepo
-                        .findByIdAndDeviceId(
+                        .findByIdAndDevice_IdAndDevice_CompanyNameIgnoreCase(
                                 imageId,
-                                deviceId
+                                deviceId,
+                                normalizedCompanyName
                         )
                         .orElseThrow(() ->
                                 new AgentDatabaseServiceException(
@@ -171,5 +216,25 @@ public class ScreenLogService {
         }
 
         return new UrlResource(path.toUri());
+    }
+
+    private String normalizeRequired(String value, String fieldName) {
+
+        if (value == null || value.isBlank()) {
+            throw new AgentDatabaseServiceException(fieldName + " is required");
+        }
+
+        return value.trim();
+    }
+
+    private String trimOptional(String value) {
+
+        if (value == null) {
+            return null;
+        }
+
+        String trimmedValue = value.trim();
+
+        return trimmedValue.isEmpty() ? null : trimmedValue;
     }
 }

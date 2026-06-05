@@ -11,8 +11,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.UUID;
 @Component
 public class FileUtil {
 
@@ -23,22 +24,24 @@ public class FileUtil {
 
     public Path createFile(ScreenLogRequestDto dto, MultipartFile file) throws IOException {
         System.out.println("File is creating ...");
-        String folderPath =
-                BASE_DIR + "/" +
-                        sanitize(dto.getComputerName()) + "_" +
-                        sanitize(dto.getUsername()) + "/" +
-                        LocalDate.now();
+        LocalDate captureDate = dto.getCaptureTime().toLocalDate();
+        Path folderPath = Paths.get(BASE_DIR)
+                .resolve(sanitize(dto.getCompanyName()))
+                .resolve(sanitize(dto.getEmployeeName()))
+                .resolve(captureDate.toString())
+                .resolve("screenShots");
 
-        Files.createDirectories(Paths.get(folderPath));
+        Files.createDirectories(folderPath);
 
         // FILE NAME
 
         String fileName =
-                LocalTime.now()
-                        .format(DateTimeFormatter.ofPattern("HH-mm-ss"))
-                        + ".png";
+                dto.getCaptureTime()
+                        .format(DateTimeFormatter.ofPattern("HH-mm-ss-SSS"))
+                        + "-" + UUID.randomUUID()
+                        + getFileExtension(file);
 
-        Path imagePath = Paths.get(folderPath, fileName);
+        Path imagePath = folderPath.resolve(fileName);
 
 
 
@@ -57,10 +60,39 @@ public class FileUtil {
 
     public  String sanitize(String value) {
 
-        if (value == null) {
+        if (value == null || value.isBlank()) {
             return "unknown";
         }
 
         return value.replaceAll("[^a-zA-Z0-9-_]", "_");
+    }
+
+    private String getFileExtension(MultipartFile file) {
+
+        String originalFilename = file.getOriginalFilename();
+
+        if (originalFilename != null) {
+            int dotIndex = originalFilename.lastIndexOf('.');
+
+            if (dotIndex >= 0 && dotIndex < originalFilename.length() - 1) {
+                String extension = originalFilename.substring(dotIndex).toLowerCase(Locale.ROOT);
+
+                if (extension.matches("\\.[a-z0-9]{1,10}")) {
+                    return extension;
+                }
+            }
+        }
+
+        String contentType = file.getContentType();
+
+        if ("image/jpeg".equalsIgnoreCase(contentType)) {
+            return ".jpg";
+        }
+
+        if ("image/png".equalsIgnoreCase(contentType)) {
+            return ".png";
+        }
+
+        return ".img";
     }
 }
