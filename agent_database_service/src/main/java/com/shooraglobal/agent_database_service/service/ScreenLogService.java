@@ -12,12 +12,11 @@ import com.shooraglobal.agent_database_service.repo.ScreenLogRepo;
 import com.shooraglobal.agent_database_service.util.FileUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -55,37 +54,45 @@ public class ScreenLogService {
             throw new AgentDatabaseServiceException("Wrong File Type!");
         }
 
-        String companyName = normalizeRequired(dto.getCompanyName(), "companyName");
-        String macAddress = normalizeRequired(dto.getMacAddress(), "macAddress");
-        String employeeName = normalizeRequired(dto.getEmployeeName(), "employeeName");
+        String companyName = normalizeRequired(dto.getCompanyName(), "company_name");
+        String workspaceCode = normalizeRequired(dto.getWorkspaceCode(), "workspace_code");
+        String userName = normalizeRequired(dto.getUserName(), "user_name");
+        String email = normalizeRequired(dto.getEmail(), "email");
+        String hostname = normalizeRequired(dto.getHostname(), "hostname");
+        String macAddress = normalizeRequired(dto.getMacAddress(), "mac_address");
+        String deviceToken = normalizeRequired(dto.getDeviceToken(), "device_token");
 
         dto.setCompanyName(companyName);
+        dto.setWorkspaceCode(workspaceCode);
+        dto.setUserName(userName);
+        dto.setEmail(email);
+        dto.setHostname(hostname);
         dto.setMacAddress(macAddress);
-        dto.setEmployeeName(employeeName);
+        dto.setDeviceToken(deviceToken);
+        dto.setProductKey(trimOptional(dto.getProductKey()));
+        dto.setRegisteredUrl(trimOptional(dto.getRegisteredUrl()));
 
         Device device = deviceRepo
-                .findByCompanyNameIgnoreCaseAndMacAddressIgnoreCase(companyName, macAddress)
+                .findByCompanyNameIgnoreCaseAndDeviceTokenIgnoreCase(companyName, deviceToken)
                 .orElseGet(Device::new);
-
-        device.setUsername(trimOptional(dto.getUsername()));
-
-        device.setComputerName(trimOptional(dto.getComputerName()));
-
-        device.setMacAddress(macAddress);
 
         device.setCompanyName(companyName);
 
-        device.setClientName(trimOptional(dto.getClientName()));
+        device.setWorkspaceCode(workspaceCode);
 
-        device.setEmployeeName(employeeName);
+        device.setUserName(userName);
 
-        device.setRegisteredUserName(trimOptional(dto.getRegisteredUserName()));
+        device.setEmail(email);
 
-        device.setCity(trimOptional(dto.getCity()));
+        device.setHostname(hostname);
 
-        device.setProductKey(trimOptional(dto.getProductKey()));
+        device.setMacAddress(macAddress);
 
-        device.setRegisteredUrl(trimOptional(dto.getRegisteredUrl()));
+        device.setProductKey(dto.getProductKey());
+
+        device.setRegisteredUrl(dto.getRegisteredUrl());
+
+        device.setDeviceToken(deviceToken);
 
         device.setLastScreenShotCaptureAt(dto.getCaptureTime());
 
@@ -124,8 +131,8 @@ public class ScreenLogService {
 
     public List<DeviceResponseDto> getAllDevices(String companyName) {
 
-        List<Device> devices = deviceRepo.findByCompanyNameIgnoreCaseOrderByEmployeeNameAscComputerNameAsc(
-                normalizeRequired(companyName, "companyName")
+        List<Device> devices = deviceRepo.findByCompanyNameIgnoreCaseOrderByUserNameAscHostnameAsc(
+                normalizeRequired(companyName, "company_name")
         );
 
         return devices.stream()
@@ -133,16 +140,15 @@ public class ScreenLogService {
 
 
                         device.getId(),
-                        device.getUsername(),
-                        device.getComputerName(),
-                        device.getMacAddress(),
                         device.getCompanyName(),
-                        device.getClientName(),
-                        device.getEmployeeName(),
-                        device.getRegisteredUserName(),
-                        device.getCity(),
+                        device.getWorkspaceCode(),
+                        device.getUserName(),
+                        device.getEmail(),
+                        device.getHostname(),
+                        device.getMacAddress(),
                         device.getProductKey(),
                         device.getRegisteredUrl(),
+                        device.getDeviceToken(),
                         device.getLastScreenShotCaptureAt()
 
                 ))
@@ -152,7 +158,7 @@ public class ScreenLogService {
 
     public List<ScreenLogResponseDto> getScreenLogs(String companyName, Long deviceId,String date) {
 
-        String normalizedCompanyName = normalizeRequired(companyName, "companyName");
+        String normalizedCompanyName = normalizeRequired(companyName, "company_name");
 
         LocalDate localDate = LocalDate.parse(date);
 
@@ -168,19 +174,38 @@ public class ScreenLogService {
                         end
                 );
 
-        String encodedCompanyName = UriUtils.encodePathSegment(normalizedCompanyName, StandardCharsets.UTF_8);
-
         return logs.stream()
-                .map(log -> new ScreenLogResponseDto(
-
-                        log.getId(),
-
-                        "/api/screenlogs/companies/" + encodedCompanyName + "/devices/" + deviceId + "/images/" + log.getId(),
-
-                        log.getCaptureTime()
-
-                ))
+                .map(this::toScreenLogResponseDto)
                 .toList();
+    }
+
+    private ScreenLogResponseDto toScreenLogResponseDto(ScreenLog log) {
+
+        Path path = Paths.get(log.getImagePath());
+
+        if (!Files.exists(path)) {
+            throw new AgentDatabaseServiceException("Image file not found");
+        }
+
+        try {
+            String contentType = Files.probeContentType(path);
+
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            String imageBase64 = Base64.getEncoder().encodeToString(Files.readAllBytes(path));
+
+            return new ScreenLogResponseDto(
+                    log.getId(),
+                    path.getFileName().toString(),
+                    contentType,
+                    imageBase64,
+                    log.getCaptureTime()
+            );
+        } catch (IOException e) {
+            throw new AgentDatabaseServiceException("Error reading image file");
+        }
     }
 
     public Resource getImage(
@@ -189,7 +214,7 @@ public class ScreenLogService {
             Long deviceId
     ) throws IOException {
 
-        String normalizedCompanyName = normalizeRequired(companyName, "companyName");
+        String normalizedCompanyName = normalizeRequired(companyName, "company_name");
 
         ScreenLog screenLog =
                 screenLogRepo

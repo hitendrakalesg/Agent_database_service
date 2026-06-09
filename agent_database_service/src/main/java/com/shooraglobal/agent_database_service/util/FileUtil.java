@@ -13,7 +13,6 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.UUID;
 @Component
 public class FileUtil {
 
@@ -27,9 +26,8 @@ public class FileUtil {
         LocalDate captureDate = dto.getCaptureTime().toLocalDate();
         Path folderPath = Paths.get(BASE_DIR)
                 .resolve(sanitize(dto.getCompanyName()))
-                .resolve(sanitize(dto.getEmployeeName()))
-                .resolve(captureDate.toString())
-                .resolve("screenShots");
+                .resolve(sanitize(dto.getUserName()))
+                .resolve(captureDate.toString());
 
         Files.createDirectories(folderPath);
 
@@ -37,8 +35,7 @@ public class FileUtil {
 
         String fileName =
                 dto.getCaptureTime()
-                        .format(DateTimeFormatter.ofPattern("HH-mm-ss-SSS"))
-                        + "-" + UUID.randomUUID()
+                        .format(DateTimeFormatter.ofPattern("HH-mm-ss"))
                         + getFileExtension(file);
 
         Path imagePath = folderPath.resolve(fileName);
@@ -69,6 +66,16 @@ public class FileUtil {
 
     private String getFileExtension(MultipartFile file) {
 
+        String contentType = file.getContentType();
+
+        if ("image/jpeg".equalsIgnoreCase(contentType)) {
+            return ".jpeg";
+        }
+
+        if ("image/png".equalsIgnoreCase(contentType)) {
+            return ".png";
+        }
+
         String originalFilename = file.getOriginalFilename();
 
         if (originalFilename != null) {
@@ -81,16 +88,6 @@ public class FileUtil {
                     return extension;
                 }
             }
-        }
-
-        String contentType = file.getContentType();
-
-        if ("image/jpeg".equalsIgnoreCase(contentType)) {
-            return ".jpg";
-        }
-
-        if ("image/png".equalsIgnoreCase(contentType)) {
-            return ".png";
         }
 
         return ".img";

@@ -1,54 +1,91 @@
 package com.shooraglobal.agent_database_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
 
 import java.time.LocalDateTime;
 
 public class ScreenLogRequestDto {
 
-    @NotBlank(message = "username is required")
-    private String username;
-
-    @NotBlank(message = "computerName is required")
-    private String computerName;
-
-    @NotBlank(message = "macAddress is required")
-    private String macAddress;
-
-    @NotNull(message = "captureTime is required")
-    private LocalDateTime captureTime;
-
-    @NotBlank(message = "companyName is required")
+    @JsonProperty("company_name")
+    @NotBlank(message = "company_name is required")
     private String companyName;
 
-    private String clientName;
+    @JsonProperty("workspace_code")
+    @NotBlank(message = "workspace_code is required")
+    private String workspaceCode;
 
-    @NotBlank(message = "employeeName is required")
-    private String employeeName;
+    @JsonProperty("user_name")
+    @NotBlank(message = "user_name is required")
+    private String userName;
 
-    private String registeredUserName;
+    @JsonProperty("email")
+    @NotBlank(message = "email is required")
+    @Email(message = "email must be valid")
+    private String email;
 
-    private String city;
+    @JsonProperty("hostname")
+    @NotBlank(message = "hostname is required")
+    private String hostname;
 
+    @JsonProperty("mac_address")
+    @NotBlank(message = "mac_address is required")
+    private String macAddress;
+
+    @JsonProperty("capture_time")
+    @NotNull(message = "capture_time is required")
+    private LocalDateTime captureTime;
+
+    @JsonProperty("product_key")
     private String productKey;
 
+    @JsonProperty("registered_url")
     private String registeredUrl;
 
-    public String getUsername() {
-        return username;
+    @JsonProperty("device_token")
+    @NotBlank(message = "device_token is required")
+    private String deviceToken;
+
+    public String getCompanyName() {
+        return companyName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
-    public String getComputerName() {
-        return computerName;
+    public String getWorkspaceCode() {
+        return workspaceCode;
     }
 
-    public void setComputerName(String computerName) {
-        this.computerName = computerName;
+    public void setWorkspaceCode(String workspaceCode) {
+        this.workspaceCode = workspaceCode;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
     }
 
     public String getMacAddress() {
@@ -67,46 +104,6 @@ public class ScreenLogRequestDto {
         this.captureTime = captureTime;
     }
 
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getClientName() {
-        return clientName;
-    }
-
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
-    }
-
-    public String getEmployeeName() {
-        return employeeName;
-    }
-
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
-    }
-
-    public String getRegisteredUserName() {
-        return registeredUserName;
-    }
-
-    public void setRegisteredUserName(String registeredUserName) {
-        this.registeredUserName = registeredUserName;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
     public String getProductKey() {
         return productKey;
     }
@@ -121,5 +118,13 @@ public class ScreenLogRequestDto {
 
     public void setRegisteredUrl(String registeredUrl) {
         this.registeredUrl = registeredUrl;
+    }
+
+    public String getDeviceToken() {
+        return deviceToken;
+    }
+
+    public void setDeviceToken(String deviceToken) {
+        this.deviceToken = deviceToken;
     }
 }

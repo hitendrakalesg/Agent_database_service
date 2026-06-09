@@ -1,13 +1,23 @@
 package com.shooraglobal.agent_database_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 
 public class ScreenLogResponseDto {
 
     private Long id;
 
-    private String imageUrl;
+    @JsonProperty("file_name")
+    private String fileName;
 
+    @JsonProperty("content_type")
+    private String contentType;
+
+    @JsonProperty("image_base64")
+    private String imageBase64;
+
+    @JsonProperty("capture_time")
     private LocalDateTime captureTime;
 
     public ScreenLogResponseDto() {
@@ -15,11 +25,15 @@ public class ScreenLogResponseDto {
 
     public ScreenLogResponseDto(
             Long id,
-            String imageUrl,
+            String fileName,
+            String contentType,
+            String imageBase64,
             LocalDateTime captureTime
     ) {
         this.id = id;
-        this.imageUrl = imageUrl;
+        this.fileName = fileName;
+        this.contentType = contentType;
+        this.imageBase64 = imageBase64;
         this.captureTime = captureTime;
     }
 
@@ -27,8 +41,16 @@ public class ScreenLogResponseDto {
         return id;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public String getImageBase64() {
+        return imageBase64;
     }
 
     public LocalDateTime getCaptureTime() {
@@ -39,8 +61,16 @@ public class ScreenLogResponseDto {
         this.id = id;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
     }
 
     public void setCaptureTime(LocalDateTime captureTime) {

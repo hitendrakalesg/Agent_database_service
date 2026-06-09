@@ -1,9 +1,69 @@
 package com.shooraglobal.agent_database_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 
 public class DeviceResponseDto {
     private long id;
+
+    @JsonProperty("company_name")
+    private String companyName;
+
+    @JsonProperty("workspace_code")
+    private String workspaceCode;
+
+    @JsonProperty("user_name")
+    private String userName;
+
+    private String email;
+
+    private String hostname;
+
+    @JsonProperty("mac_address")
+    private String macAddress;
+
+    @JsonProperty("product_key")
+    private String productKey;
+
+    @JsonProperty("registered_url")
+    private String registeredUrl;
+
+    @JsonProperty("device_token")
+    private String deviceToken;
+
+    @JsonProperty("last_screenshot_capture_at")
+    private LocalDateTime lastScreenShotCaptureAt;
+
+    public DeviceResponseDto() {
+    }
+
+
+    public DeviceResponseDto(
+            long id,
+            String companyName,
+            String workspaceCode,
+            String userName,
+            String email,
+            String hostname,
+            String macAddress,
+            String productKey,
+            String registeredUrl,
+            String deviceToken,
+            LocalDateTime lastScreenShotCaptureAt
+    ) {
+        this.id = id;
+        this.companyName = companyName;
+        this.workspaceCode = workspaceCode;
+        this.userName = userName;
+        this.email = email;
+        this.hostname = hostname;
+        this.macAddress = macAddress;
+        this.productKey = productKey;
+        this.registeredUrl = registeredUrl;
+        this.deviceToken = deviceToken;
+        this.lastScreenShotCaptureAt = lastScreenShotCaptureAt;
+    }
 
     public long getId() {
         return id;
@@ -11,98 +71,6 @@ public class DeviceResponseDto {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    private String username;
-
-    private String computerName;
-
-    private String macAddress;
-
-    private String companyName;
-
-    private String clientName;
-
-    private String employeeName;
-
-    private String registeredUserName;
-
-    private String city;
-
-    private String productKey;
-
-    private String registeredUrl;
-
-    private LocalDateTime lastScreenShotCaptureAt;
-
-    public DeviceResponseDto(String username, String computerName, String macAddress, LocalDateTime lastScreenShotCaptureAt) {
-        this.username = username;
-        this.computerName = computerName;
-        this.macAddress = macAddress;
-        this.lastScreenShotCaptureAt = lastScreenShotCaptureAt;
-    }
-
-    public DeviceResponseDto(long id, String username, String computerName, String macAddress, LocalDateTime lastScreenShotCaptureAt) {
-        this.id = id;
-        this.username = username;
-        this.computerName = computerName;
-        this.macAddress = macAddress;
-        this.lastScreenShotCaptureAt = lastScreenShotCaptureAt;
-    }
-
-    public DeviceResponseDto(
-            long id,
-            String username,
-            String computerName,
-            String macAddress,
-            String companyName,
-            String clientName,
-            String employeeName,
-            String registeredUserName,
-            String city,
-            String productKey,
-            String registeredUrl,
-            LocalDateTime lastScreenShotCaptureAt
-    ) {
-        this.id = id;
-        this.username = username;
-        this.computerName = computerName;
-        this.macAddress = macAddress;
-        this.companyName = companyName;
-        this.clientName = clientName;
-        this.employeeName = employeeName;
-        this.registeredUserName = registeredUserName;
-        this.city = city;
-        this.productKey = productKey;
-        this.registeredUrl = registeredUrl;
-        this.lastScreenShotCaptureAt = lastScreenShotCaptureAt;
-    }
-
-    public DeviceResponseDto() {
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getComputerName() {
-        return computerName;
-    }
-
-    public void setComputerName(String computerName) {
-        this.computerName = computerName;
-    }
-
-    public String getMacAddress() {
-        return macAddress;
-    }
-
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
     }
 
     public String getCompanyName() {
@@ -113,36 +81,44 @@ public class DeviceResponseDto {
         this.companyName = companyName;
     }
 
-    public String getClientName() {
-        return clientName;
+    public String getWorkspaceCode() {
+        return workspaceCode;
     }
 
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
+    public void setWorkspaceCode(String workspaceCode) {
+        this.workspaceCode = workspaceCode;
     }
 
-    public String getEmployeeName() {
-        return employeeName;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public String getRegisteredUserName() {
-        return registeredUserName;
+    public String getEmail() {
+        return email;
     }
 
-    public void setRegisteredUserName(String registeredUserName) {
-        this.registeredUserName = registeredUserName;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getCity() {
-        return city;
+    public String getHostname() {
+        return hostname;
     }
 
-    public void setCity(String city) {
-        this.city = city;
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    public String getMacAddress() {
+        return macAddress;
+    }
+
+    public void setMacAddress(String macAddress) {
+        this.macAddress = macAddress;
     }
 
     public String getProductKey() {
@@ -159,6 +135,14 @@ public class DeviceResponseDto {
 
     public void setRegisteredUrl(String registeredUrl) {
         this.registeredUrl = registeredUrl;
+    }
+
+    public String getDeviceToken() {
+        return deviceToken;
+    }
+
+    public void setDeviceToken(String deviceToken) {
+        this.deviceToken = deviceToken;
     }
 
     public LocalDateTime getLastScreenShotCaptureAt() {

@@ -10,7 +10,7 @@ import java.util.List;
 @Table(
         name = "devices",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"company_name", "mac_address"})
+                @UniqueConstraint(columnNames = {"company_name", "device_token"})
         }
 )
 public class Device {
@@ -19,36 +19,34 @@ public class Device {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 100)
-    private String username;
+    @Column(name = "company_name", length = 150, nullable = false)
+    private String companyName;
 
-    @Column(length = 150)
-    private String computerName;
+    @Column(name = "workspace_code", length = 100, nullable = false)
+    private String workspaceCode;
+
+    @Column(name = "user_name", length = 150, nullable = false)
+    private String userName;
+
+    @Column(length = 254, nullable = false)
+    private String email;
+
+    @Column(length = 150, nullable = false)
+    private String hostname;
 
     @Column(name = "mac_address", length = 50, nullable = false)
     private String macAddress;
 
-    @Column(name = "company_name", length = 150)
-    private String companyName;
-
-    @Column(length = 150)
-    private String clientName;
-
-    @Column(length = 150)
-    private String employeeName;
-
-    @Column(length = 150)
-    private String registeredUserName;
-
-    @Column(length = 100)
-    private String city;
-
-    @Column(length = 100)
+    @Column(name = "product_key", length = 100)
     private String productKey;
 
-    @Column(length = 500)
+    @Column(name = "registered_url", length = 500)
     private String registeredUrl;
 
+    @Column(name = "device_token", length = 255, nullable = false)
+    private String deviceToken;
+
+    @Column(name = "last_screenshot_capture_at")
     private LocalDateTime lastScreenShotCaptureAt;
 
     @OneToMany(
@@ -61,46 +59,8 @@ public class Device {
     public Device() {
     }
 
-    public Device(
-            String username,
-            String computerName,
-            String macAddress,
-            String companyName,
-            String employeeName
-    ) {
-        this.username = username;
-        this.computerName = computerName;
-        this.macAddress = macAddress;
-        this.companyName = companyName;
-        this.employeeName = employeeName;
-    }
-
     public Long getId() {
         return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getComputerName() {
-        return computerName;
-    }
-
-    public void setComputerName(String computerName) {
-        this.computerName = computerName;
-    }
-
-    public String getMacAddress() {
-        return macAddress;
-    }
-
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
     }
 
     public String getCompanyName() {
@@ -111,36 +71,44 @@ public class Device {
         this.companyName = companyName;
     }
 
-    public String getClientName() {
-        return clientName;
+    public String getWorkspaceCode() {
+        return workspaceCode;
     }
 
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
+    public void setWorkspaceCode(String workspaceCode) {
+        this.workspaceCode = workspaceCode;
     }
 
-    public String getEmployeeName() {
-        return employeeName;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public String getRegisteredUserName() {
-        return registeredUserName;
+    public String getEmail() {
+        return email;
     }
 
-    public void setRegisteredUserName(String registeredUserName) {
-        this.registeredUserName = registeredUserName;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getCity() {
-        return city;
+    public String getHostname() {
+        return hostname;
     }
 
-    public void setCity(String city) {
-        this.city = city;
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    public String getMacAddress() {
+        return macAddress;
+    }
+
+    public void setMacAddress(String macAddress) {
+        this.macAddress = macAddress;
     }
 
     public String getProductKey() {
@@ -159,7 +127,13 @@ public class Device {
         this.registeredUrl = registeredUrl;
     }
 
+    public String getDeviceToken() {
+        return deviceToken;
+    }
 
+    public void setDeviceToken(String deviceToken) {
+        this.deviceToken = deviceToken;
+    }
 
     public List<ScreenLog> getScreenLogs() {
         return screenLogs;

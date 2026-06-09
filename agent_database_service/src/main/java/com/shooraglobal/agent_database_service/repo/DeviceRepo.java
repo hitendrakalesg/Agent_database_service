@@ -9,9 +9,7 @@ import java.util.Optional;
 public interface DeviceRepo
         extends JpaRepository<Device, Long> {
 
-    Optional<Device> findByCompanyNameIgnoreCaseAndMacAddressIgnoreCase(String companyName, String macAddress);
+    Optional<Device> findByCompanyNameIgnoreCaseAndDeviceTokenIgnoreCase(String companyName, String deviceToken);
 
-    List<Device> findByCompanyNameIgnoreCaseOrderByEmployeeNameAscComputerNameAsc(String companyName);
-
-    Device findByUsername(String username);
+    List<Device> findByCompanyNameIgnoreCaseOrderByUserNameAscHostnameAsc(String companyName);
 }
