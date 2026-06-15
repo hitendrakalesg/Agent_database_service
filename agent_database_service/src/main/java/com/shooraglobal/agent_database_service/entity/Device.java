@@ -10,7 +10,7 @@ import java.util.List;
 @Table(
         name = "devices",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"company_name", "device_token"})
+                @UniqueConstraint(columnNames = {"company_name","email", "device_token"})
         }
 )
 public class Device {
